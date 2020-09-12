@@ -8,6 +8,7 @@
 #include <vector>
 #include <cmath>
 #include <optional>
+#include <functional>
 
 #include "color.h"
 #include "geometry.h"

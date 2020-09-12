@@ -8,6 +8,7 @@
 #include <ctime>
 #include <chrono>
 #include <iostream>
+#include <functional>
 
 namespace stg::time_utils {
 

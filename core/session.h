@@ -16,7 +16,7 @@ namespace stg {
         using minutes = time_slot::minutes;
 
         std::vector<time_slot> time_slots{};
-        activity *activity = time_slot::no_activity;
+        stg::activity *activity = time_slot::no_activity;
 
         auto length() const -> length_t;
         auto begin_time() const -> minutes;

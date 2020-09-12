@@ -5,10 +5,15 @@ set(CMAKE_CXX_STANDARD 17)
 set(Boost_USE_STATIC_LIBS ON)
 
 find_package(Boost COMPONENTS filesystem REQUIRED)
-find_package(catch2 REQUIRED)
+find_package(Catch2 REQUIRED)
 find_package(Qt5 COMPONENTS Widgets Test REQUIRED)
 
-find_library(utf8Proc_LIBRARY_PATH libutf8proc.a utf8proc.lib utf8proc)
+if (LINUX)
+	 include(FindPkgConfig)
+	 pkg_check_modules(utf8Proc libutf8proc)
+else()
+	 find_library(utf8Proc_LIBRARY_PATH libutf8proc.a utf8proc.lib utf8proc)
+endif()
 
 if (APPLE)
     find_package(Qt5 COMPONENTS MacExtras REQUIRED)
@@ -130,7 +135,7 @@ set(CORE_TESTS
         core/tests/notifier_immeadiate_test.cpp
         core/tests/notifier_scheduled_test.cpp)
 
-set(CORE_LIBRARIES ${utf8Proc_LIBRARY_PATH})
+set(CORE_LIBRARIES ${utf8Proc_LIBRARIES})
 
 set(UI
         ui/mainwindow.cpp
@@ -342,6 +347,8 @@ target_link_libraries(StrategrCore
         ${CORE_PLATFORM_LIBRARIES})
 
 set_target_properties(StrategrCore PROPERTIES
+		  CXX_STANDARD 17
+		  CXX_EXTENSIONS ON
         FRAMEWORK TRUE
         PUBLIC_HEADER core/strategy.h
         VERSION ${VERSION_SHORT}

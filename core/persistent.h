@@ -10,6 +10,7 @@
 #include <vector>
 #include <unordered_map>
 #include <iostream>
+#include <cassert>
 
 #include "utility"
 #include "notifications.h"

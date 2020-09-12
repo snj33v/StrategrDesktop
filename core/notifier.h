@@ -96,7 +96,7 @@ namespace stg {
     private:
         static void remove_stale_from(notifications_list &notifications);
 
-        const strategy &strategy;
+        const stg::strategy &strategy;
         std::optional<file_bookmark> _file;
 
         std::shared_ptr<stg::timer> polling_timer;

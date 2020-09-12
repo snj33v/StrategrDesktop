@@ -39,15 +39,14 @@ ApplicationMenu::ApplicationMenu(MainWindow *window) : window(window) {
     });
 
     aboutAction->setMenuRole(QAction::AboutRole);
-
 //    if (!Application::updateMenuAdded) {
-    auto *updateAction = helpMenu->addAction(tr("Check For Updates..."), [=] {
-        Application::checkForUpdates();
-    });
+//    auto *updateAction = helpMenu->addAction(tr("Check For Updates..."), [=] {
+//        Application::checkForUpdates();
+//    });
 
-    updateAction->setMenuRole(QAction::ApplicationSpecificRole);
+//    updateAction->setMenuRole(QAction::ApplicationSpecificRole);
 
-    Application::updateMenuAdded = true;
+//    Application::updateMenuAdded = true;
 //    }
 
     window->setMenuBar(this);
