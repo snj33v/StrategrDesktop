@@ -8,53 +8,51 @@
 #include <thread>
 #include <stdexcept>
 #include <ostream>
+#include <string>
+#include <unordered_map>
+#include <unordered_set>
+#include <optional>
 
 #include "strategy.h"
 #include "timer.h"
+#include "stgstring.h"
+#include "notifications.h"
+#include "time_utils.h"
 
 namespace stg {
     class strategy;
-    struct notification {
-        using seconds = unsigned int;
-        using minutes = unsigned int;
 
-        enum class type {
-            prepare_start,
-            start,
-            prepare_end,
-            end,
-            prepare_strategy_end,
-            strategy_end
-        };
+#pragma mark - Notification
 
-        notification(const session &session, type type);
-
-        std::string identifier = make_string_uuid();
-
-        std::string title;
-        std::string message;
-
-        seconds delivery_time;
-
-    private:
-        static auto make_string_uuid() -> std::string;
-        static auto make_title(const session &session, type type) -> std::string;
-        static auto make_sub_title(const session &session, type type) -> std::string;
-        static auto make_delivery_time(const session &session, type type) -> seconds;
-
-        friend bool operator==(const notification &lhs, const notification &rhs);
-
-        friend std::ostream &operator<<(std::ostream &os, const notification &notification);
+    enum class notification_type {
+        prepare_start,
+        start,
+        prepare_end,
+        end,
+        prepare_strategy_end,
+        strategy_end
     };
+
+    auto session_notification(const session &session,
+                              notification_type type) -> user_notifications::notification;
+
+#pragma mark - Notifier
+
+    // This class supports two methods for generating notifications:
+    // polling (more suitable for desktop) and scheduling (more suitable for mobile).
 
     class notifier {
     public:
-        using seconds = notification::seconds;
-        using minutes = notification::minutes;
 
-        using scheduler_t = std::function<void(const std::vector<notification> &)>;
-        using resetter_t = std::function<void(const std::vector<std::string> &)>;
-        using sender_t = std::function<void(const notification &)>;
+#pragma mark - Notifier Type Aliases
+
+        using seconds = time_utils::seconds;
+        using minutes = time_utils::minutes;
+        using notifications_list = std::vector<user_notifications::notification>;
+
+        using dictionary = user_notifications::storage;
+
+#pragma mark - Getting Delivery Intervals from Current Time
 
         static constexpr seconds prepare_seconds_interval = 5 * 60;
         static constexpr seconds immediate_seconds_interval = 20;
@@ -62,33 +60,64 @@ namespace stg {
         static auto immediate_delivery_seconds(minutes minutes_time) -> seconds;
         static auto prepare_delivery_seconds(minutes minutes_time) -> seconds;
 
-        scheduler_t on_schedule_notifications = nullptr;
-        resetter_t on_delete_notifications = nullptr;
-        sender_t on_send_notification = nullptr;
+#pragma mark - Construction
 
-        explicit notifier(const strategy &strategy);
+        explicit notifier(const strategy &strategy,
+                          std::optional<file_bookmark> file = std::nullopt);
         ~notifier();
 
-        void schedule();
+#pragma mark - Polling For Notifications
 
         void start_polling(timer::seconds interval);
         void stop_polling();
 
-        auto scheduled_notifications() const -> const std::vector<stg::notification> &;
-        auto scheduled_identifiers() const -> std::vector<std::string>;
-    private:
-        std::unique_ptr<stg::timer> timer = nullptr;
+#pragma mark - Manually Scheduling Notifications
 
-        static void remove_stale_from(std::vector<notification> &notifications);
+        void schedule();
+        auto scheduled_identifiers() const -> std::vector<std::string>;
+
+#pragma mark - Manually Persisting Scheduled Notifications Identifiers
+
+        void persist_scheduled_identifiers();
+
+#pragma mark - Getting & Updating Represented File Path
+
+        auto file_path() const -> const std::optional<file_bookmark> &;
+        void set_file(const std::optional<file_bookmark> &file_path);
+
+        static void note_file_removed(const file_bookmark &file_path);
+        static void note_file_moved(const file_bookmark &from, const file_bookmark &to);
+
+#pragma mark - Getting Active Files
+
+        static auto active_files() -> std::unordered_set<file_bookmark>;
+        static void reset_active_files();
+
+    private:
+        static void remove_stale_from(notifications_list &notifications);
 
         const strategy &strategy;
-        seconds last_poll_time = 0;
-        bool is_watching = false;
+        std::optional<file_bookmark> _file;
 
-        std::vector<stg::notification> _scheduled_notifications;
-        std::vector<stg::notification> _upcoming_notifications;
+        std::shared_ptr<stg::timer> polling_timer;
+        std::shared_ptr<stg::timer> on_change_timer;
+
+        seconds last_poll_time = 0;
+
+        notifications_list _scheduled_notifications;
+        notifications_list _upcoming_notifications;
+
+#pragma mark - Responding To Strategy Changes
+
+        void on_sessions_change();
+
+#pragma mark - Sending Immeadiate Notification
 
         void send_now_if_needed(seconds polling_seconds_interval);
+
+#pragma mark - Reading & Writing to Persistent Dictionary
+
+        auto persisted_notifications_identifiers() const -> std::vector<std::string>;
     };
 }
 

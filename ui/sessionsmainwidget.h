@@ -33,9 +33,7 @@ public:
 
     SlotboardScrollArea *slotboardScrollArea() const;
 private:
-    stg::notifier notifier{strategy()};
-
-    NotifierBackend notifierBackend;
+    stg::notifier notifier = stg::notifier(strategy());
 
     StrategySettingsWidget *strategySettingsWidget = nullptr;
     CurrentSessionWidget *currentSessionWidget = nullptr;
