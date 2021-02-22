@@ -1,29 +1,31 @@
+#include <QAbstractTextDocumentLayout>
+#include <QApplication>
 #include <QLayout>
 #include <QPaintEvent>
 #include <QPainter>
-#include <QStyleOption>
-#include <QApplication>
-#include <QTextDocument>
-#include <QAbstractTextDocumentLayout>
 #include <QStaticText>
+#include <QStyleOption>
+#include <QTextDocument>
 
-#include "sessionwidget.h"
-#include "colorutils.h"
-#include "fontutils.h"
 #include "application.h"
 #include "applicationsettings.h"
+#include "colorutils.h"
+#include "drawingutils.h"
+#include "fontutils.h"
+#include "sessionwidget.h"
 #include "theme.h"
 
 SessionWidget::SessionWidget(const stg::session &session, QWidget *parent)
-        : session(session), DataProviderWidget(parent) {
+    : session(session), DataProviderWidget(parent) {
     setAttribute(Qt::WA_TransparentForMouseEvents);
 
     reloadSession();
 }
 
 void SessionWidget::setSession(const stg::session &newSession) {
-    if (newSession == session)
+    if (newSession == session) {
         return;
+    }
 
     session = newSession;
     reloadSession();
@@ -31,8 +33,9 @@ void SessionWidget::setSession(const stg::session &newSession) {
 
 
 void SessionWidget::setIsBorderSelected(bool isBorderSelected) {
-    if (_isBorderSelected == isBorderSelected)
+    if (_isBorderSelected == isBorderSelected) {
         return;
+    }
 
     _isBorderSelected = isBorderSelected;
     update();
@@ -43,8 +46,9 @@ int SessionWidget::expectedHeight() {
 }
 
 void SessionWidget::setDrawsBorders(bool drawsBorders) {
-    if (_drawsBorders == drawsBorders)
+    if (_drawsBorders == drawsBorders) {
         return;
+    }
 
     _drawsBorders = drawsBorders;
     update();
@@ -74,35 +78,40 @@ void SessionWidget::reloadSession() {
     previousEndTime = session.end_time();
 }
 
+
 void SessionWidget::paintEvent(QPaintEvent *) {
     QPainter painter(this);
 
     painter.setPen(Qt::NoPen);
 
-    if (_drawsBorders)
+    if (_drawsBorders) {
         drawBorder(painter);
+    }
 
     drawBackground(painter);
 
-    if (_drawsBorders)
+    if (_drawsBorders) {
         drawRulers(painter);
+    }
 
-    if (session.activity)
+    if (session.activity) {
         drawLabel(painter);
+    }
 }
 
 void SessionWidget::drawRulers(QPainter &painter) {
     QColor rulerColor = session.activity
-                        ? QColor(Application::theme().session_ruler_color(session, _isSelected))
-                        : borderColor();
+                            ? QColor(Application::theme().session_ruler_color(session, _isSelected))
+                            : borderColor();
 
     painter.setBrush(rulerColor);
 
     for (const auto &timeSlot : session.time_slots) {
         auto timeSlotIndex = static_cast<int>(&timeSlot - &session.time_slots[0]);
 
-        if (timeSlotIndex == 0)
+        if (timeSlotIndex == 0) {
             continue;
+        }
 
         auto thickness = timeSlot.begin_time % 60 == 0 ? 2 : 1;
         auto rulerRect = QRect(0,
@@ -120,14 +129,19 @@ void SessionWidget::drawBackground(QPainter &painter) {
     }
 
     QColor color = Application::theme()
-            .session_background_color(session, _isSelected);
+                       .session_background_color(session, _isSelected);
 
     painter.setRenderHint(QPainter::Antialiasing);
     painter.setBrush(color);
 
-    auto backgroundRect = QRect(0, 2 + topMargin(), width(), height() - 4 - topMargin());
+    const auto backgroundRect = QRect(0,
+                                      2 + topMargin(),
+                                      width(),
+                                      height() - 4 - topMargin());
+    const auto radius = 5;
+    const auto roundness = 0.2;
 
-    painter.drawRoundedRect(backgroundRect, 4, 4);
+    painter.drawPath(DrawingUtils::squirclePath(backgroundRect, radius, roundness));
 }
 
 QColor SessionWidget::selectedBackgroundColor() const {
@@ -136,8 +150,8 @@ QColor SessionWidget::selectedBackgroundColor() const {
 
 QColor SessionWidget::sessionColor() const {
     auto color = session.activity
-                 ? QColor(session.activity->color())
-                 : QColor();
+                     ? QColor(session.activity->color())
+                     : QColor();
     return color;
 }
 
@@ -164,13 +178,15 @@ QColor SessionWidget::borderColor() {
 }
 
 void SessionWidget::setIsSelected(bool isSelected) {
-    if (_isSelected == isSelected)
+    if (_isSelected == isSelected) {
         return;
+    }
 
     _isSelected = isSelected;
 
-    if (!isSelected)
+    if (!isSelected) {
         _isBorderSelected = false;
+    }
 
     update();
 }

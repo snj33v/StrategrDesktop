@@ -5,19 +5,16 @@
 #ifndef STRATEGR_NOTIFIER_H
 #define STRATEGR_NOTIFIER_H
 
-#include <thread>
-#include <stdexcept>
+#include <optional>
 #include <ostream>
 #include <string>
-#include <unordered_map>
 #include <unordered_set>
-#include <optional>
 
-#include "strategy.h"
-#include "timer.h"
-#include "stgstring.h"
 #include "notifications.h"
+#include "stgstring.h"
+#include "strategy.h"
 #include "time_utils.h"
+#include "timer.h"
 
 namespace stg {
     class strategy;
@@ -43,7 +40,6 @@ namespace stg {
 
     class notifier {
     public:
-
 #pragma mark - Notifier Type Aliases
 
         using seconds = time_utils::seconds;
@@ -99,8 +95,8 @@ namespace stg {
         const strategy &strategy;
         std::optional<file_bookmark> _file;
 
-        std::shared_ptr<stg::timer> polling_timer;
-        std::shared_ptr<stg::timer> on_change_timer;
+        std::shared_ptr<timer> polling_timer;
+        std::shared_ptr<timer> on_change_timer;
 
         seconds last_poll_time = 0;
 
@@ -121,4 +117,4 @@ namespace stg {
     };
 }
 
-#endif //STRATEGR_NOTIFIER_H
+#endif//STRATEGR_NOTIFIER_H

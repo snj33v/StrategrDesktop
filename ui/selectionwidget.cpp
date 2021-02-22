@@ -5,8 +5,8 @@
 #include <QLayout>
 #include <QPainter>
 
+#include "drawingutils.h"
 #include "selectionwidget.h"
-#include "colorutils.h"
 
 SelectionWidget::SelectionWidget(QWidget *parent) : DataProviderWidget(parent) {
     setAttribute(Qt::WA_TransparentForMouseEvents);
@@ -18,12 +18,12 @@ SelectionWidget::SelectionWidget(QWidget *parent) : DataProviderWidget(parent) {
 
 
 void SelectionWidget::resizeEvent(QResizeEvent *event) {
-//    for (auto *child : children()) {
-//        auto *widget = qobject_cast<QWidget *>(child);
-//        if (widget) {
-//            widget->setFixedWidth(width());
-//        }
-//    }
+    //    for (auto *child : children()) {
+    //        auto *widget = qobject_cast<QWidget *>(child);
+    //        if (widget) {
+    //            widget->setFixedWidth(width());
+    //        }
+    //    }
 }
 
 void SelectionWidget::paintEvent(QPaintEvent *event) {
@@ -36,7 +36,7 @@ void SelectionWidget::paintEvent(QPaintEvent *event) {
     penColor.setAlphaF(0.5);
 
     painter.setPen(QPen(penColor, 1));
-//    painter.setPen(Qt::NoPen);
+    //    painter.setPen(Qt::NoPen);
 
     auto clickedColor = selectionColor();
     clickedColor.setAlphaF(clickedColor.alphaF() * 1.25);
@@ -50,7 +50,9 @@ void SelectionWidget::paintEvent(QPaintEvent *event) {
 
 void SelectionWidget::drawSelectionForItem(const stg::grouped_selection_element &selectionItem,
                                            QPainter &painter) {
-    auto topPosition = slotHeight() * selectionItem.front() + slotHeight() * 0.5;
+    using namespace DrawingUtils;
+
+    auto topPosition = slotHeight() * selectionItem.front() + slotHeight() / 2;
     auto widgetHeight = (int) selectionItem.size() * slotHeight();
 
     const auto &firstTimeSlot = strategy().time_slots()[selectionItem.front()];
@@ -61,5 +63,8 @@ void SelectionWidget::drawSelectionForItem(const stg::grouped_selection_element 
                       width() - 2,
                       widgetHeight - topMargin - 2);
 
-    painter.drawRoundedRect(rect, 4, 4);
+    const auto radius = 5;
+    const auto roundness = 0.2;
+
+    painter.drawPath(squirclePath(rect, radius, roundness));
 }

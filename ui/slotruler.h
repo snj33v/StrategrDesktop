@@ -5,16 +5,16 @@
 #include <QWidget>
 
 #include "applicationsettings.h"
-#include "reactivelist.hpp"
 #include "coloredlabel.h"
 #include "colorprovider.h"
 #include "dataproviderwidget.h"
+#include "reactivelist.hpp"
 
 class SlotsWidget;
 class SlotRuler : public DataProviderWidget,
                   public ReactiveList<ColoredLabel>,
                   public ColorProvider {
-Q_OBJECT
+    Q_OBJECT
 public:
     explicit SlotRuler(QWidget *parent = nullptr);
 
@@ -23,8 +23,11 @@ public:
 private:
     using ColorGetter = QColor (*)();
 
+    std::vector<std::time_t> prevTimes;
+
     int calculateLabelWidth();
     bool isIntegerHourAtIndex(int index);
+    bool slotTimeChangedAt(int index);
 
     ColorGetter labelColorGetterAtIndex(int index);
 
@@ -42,4 +45,4 @@ private:
     static const int smallFontHeight = 9;
 };
 
-#endif // SLOTRULER_H
+#endif// SLOTRULER_H

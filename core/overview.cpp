@@ -7,11 +7,11 @@
 
 namespace stg {
     overview::overview(const stg::strategy &strategy, std::function<gfloat()> width_getter)
-            : strategy(strategy),
-              width_getter(std::move(width_getter)) {
+        : strategy(strategy),
+          width_getter(std::move(width_getter)) {
     }
 
-    auto overview::elements() -> std::vector<overview::overview_item> {
+    auto overview::elements() const -> std::vector<overview::overview_item> {
         const auto &activity_sessions = strategy.sessions();
         std::vector<overview_item> result;
 
@@ -33,13 +33,12 @@ namespace stg {
         }
 
         return result;
-
     }
 
     auto overview::viewport_marker_for(const rect &slots_bounds,
                                        const rect &viewport_rect) const -> viewport_marker {
-//        std::cout << "slots_bounds: " << slots_bounds << "\n";
-//        std::cout << "viewport_rect: " << viewport_rect << "\n";
+        //        std::cout << "slots_bounds: " << slots_bounds << "\n";
+        //        std::cout << "viewport_rect: " << viewport_rect << "\n";
 
         auto relative_top = viewport_rect.top;
         auto relative_bottom = slots_bounds.height - viewport_rect.top - viewport_rect.height;
@@ -58,7 +57,7 @@ namespace stg {
         return viewport_marker{marker_origin_x, marker_width};
     }
 
-    auto overview::current_time_position() -> gfloat {
+    auto overview::current_time_position() const -> gfloat {
         return std::round(strategy.progress() * width());
     }
 

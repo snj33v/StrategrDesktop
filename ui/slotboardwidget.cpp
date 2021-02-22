@@ -1,17 +1,17 @@
+#include <QGraphicsBlurEffect>
 #include <QHBoxLayout>
-#include <QTimer>
+#include <QPainter>
 #include <QPropertyAnimation>
 #include <QScrollBar>
 #include <QStyleOption>
-#include <QGraphicsBlurEffect>
-#include <QPainter>
+#include <QTimer>
 
-#include "slotboardwidget.h"
-#include "utils.h"
-#include "mainwindow.h"
-#include "slotruler.h"
 #include "currenttimemarker.h"
+#include "mainwindow.h"
 #include "slotboardscrollarea.h"
+#include "slotboardwidget.h"
+#include "slotruler.h"
+#include "utils.h"
 
 SlotBoardWidget::SlotBoardWidget(QWidget *parent) : DataProviderWidget(parent) {
     auto *mainLayout = new QHBoxLayout();
@@ -30,7 +30,7 @@ SlotBoardWidget::SlotBoardWidget(QWidget *parent) : DataProviderWidget(parent) {
         auto slotsRect = slotsWidget->geometry();
 
         auto topOffset = stg::current_time_marker(strategy(), 5)
-                .scroll_offset(slotsRect, slotboardScrollArea()->viewportRectRelativeToContent());
+                             .scroll_offset(slotsRect, slotboardScrollArea()->viewportRectRelativeToContent());
 
         topOffset++;
 
@@ -85,6 +85,10 @@ void SlotBoardWidget::paintEvent(QPaintEvent *event) {
 
     painter.drawRect(QRect(0, 0, width(), height()));
 
+    drawResizeBoundaryCircles(painter);
+}
+
+void SlotBoardWidget::drawResizeBoundaryCircles(QPainter &painter) {
     auto slotBeforeResizeBoundaryIndex = mouseHandler().resize_boundary().slot_index;
 
     if (slotBeforeResizeBoundaryIndex >= -1) {
@@ -97,11 +101,9 @@ void SlotBoardWidget::paintEvent(QPaintEvent *event) {
 
         auto slotsRect = slotsWidget->geometry();
 
-        auto diameter = 6;
+        const auto diameter = 6;
 
-        auto topOffset = slotsRect.top() + slotHeight() / 2
-                         + (slotBeforeResizeBoundaryIndex + 1) * slotHeight()
-                         + 1 - diameter / 2;
+        auto topOffset = slotsRect.top() + slotHeight() / 2 + (slotBeforeResizeBoundaryIndex + 1) * slotHeight() + 1 - diameter / 2;
 
         auto circleLeftRect = QRect(slotsRect.left() - defaultPadding / 2 - 1,
                                     topOffset,
@@ -130,9 +132,7 @@ void SlotBoardWidget::drawDraggedSession(int sessionIndex, int firstSlotIndex) {
         const auto &lastSlot = strategy().time_slots()[lastSlotIndex];
         auto bottomMargin = lastSlot.end_time() % 60 == 0 ? 2 : 4;
         auto horizontalMargin = 8;
-        auto top = firstSlotIndex * slotHeight()
-                   + slotHeight() / 2
-                   + slotsWidget->geometry().top();
+        auto top = firstSlotIndex * slotHeight() + slotHeight() / 2 + slotsWidget->geometry().top();
 
         auto rect = QRect(slotRuler->width(),
                           top,
